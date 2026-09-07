@@ -400,9 +400,9 @@
     update();
   }
 
-  function onHeadingDrag(bearing) {
+  function onHeadingDrag(bearing, done) {
     els.heading.value = Math.round(bearing * 100) / 100;
-    update();
+    if (done) update();
   }
 
   // --- Sample CSV download ---

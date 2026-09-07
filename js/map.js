@@ -133,7 +133,15 @@ var TrackMap = (function () {
       if (axisType === "x") {
         bearing = (bearing - 90 + 360) % 360;
       }
-      if (onHeadingDrag) onHeadingDrag(bearing);
+      if (onHeadingDrag) onHeadingDrag(bearing, false);
+    });
+    handle.on("dragend", function () {
+      var pos = handle.getLatLng();
+      var bearing = bearingFromOrigin(pos.lat, pos.lng);
+      if (axisType === "x") {
+        bearing = (bearing - 90 + 360) % 360;
+      }
+      if (onHeadingDrag) onHeadingDrag(bearing, true);
     });
 
     return handle;
