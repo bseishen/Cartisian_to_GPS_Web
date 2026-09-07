@@ -1,0 +1,559 @@
+:root {
+  --primary: #2980b9;
+  --primary-dark: #1a5276;
+  --accent: #e74c3c;
+  --bg: #ffffff;
+  --bg-panel: #f8f9fa;
+  --bg-input: #ffffff;
+  --border: #dee2e6;
+  --text: #212529;
+  --text-muted: #6c757d;
+  --shadow: 0 2px 8px rgba(0,0,0,0.12);
+  --radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1a2e;
+    --bg-panel: #16213e;
+    --bg-input: #1a1a2e;
+    --border: #2a2a4a;
+    --text: #e0e0e0;
+    --text-muted: #8888aa;
+    --shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1a2e;
+  --bg-panel: #16213e;
+  --bg-input: #1a1a2e;
+  --border: #2a2a4a;
+  --text: #e0e0e0;
+  --text-muted: #8888aa;
+  --shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
+}
+
+.app-layout {
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* --- Panel (desktop = sidebar, mobile = bottom sheet) --- */
+
+.panel {
+  width: 360px;
+  min-width: 360px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 500;
+}
+
+.map-wrap {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* --- Sections --- */
+
+.section {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin: 0 0 10px 0;
+}
+
+/* --- Form elements --- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.field:last-child { margin-bottom: 0; }
+
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.field input[type="number"],
+.field input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--bg-input);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(41,128,185,0.15);
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.row > .field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- Buttons --- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  min-height: 44px;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover { background: var(--primary-dark); }
+
+.btn-secondary {
+  background: var(--border);
+  color: var(--text);
+}
+
+.btn-secondary:hover { background: #c8ccd0; }
+
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-gps {
+  background: #27ae60;
+  color: #fff;
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+.btn-block { width: 100%; }
+
+/* --- Toggle switches --- */
+
+.toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 6px 10px;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.toggle input { display: none; }
+
+.toggle-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.toggle-track {
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle input:checked + .toggle-track {
+  background: var(--primary);
+}
+
+.toggle input:checked + .toggle-track::after {
+  transform: translateX(16px);
+}
+
+/* --- Segmented control --- */
+
+.segmented {
+  display: flex;
+  background: var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.segmented label {
+  flex: 1;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.segmented input { display: none; }
+
+.segmented input:checked + span {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.segmented label span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  padding: 6px 12px;
+  color: var(--text-muted);
+}
+
+/* --- File upload --- */
+
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  color: var(--text-muted);
+  font-size: 13px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+  border-color: var(--primary);
+  background: rgba(41,128,185,0.05);
+}
+
+.upload-zone input { display: none; }
+
+.csv-help {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.csv-help code {
+  background: var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.csv-help a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.csv-help a:hover {
+  text-decoration: underline;
+}
+
+.track-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.track-info strong {
+  color: var(--text);
+}
+
+.track-info[data-has-points] {
+  cursor: pointer;
+}
+
+.track-info[data-has-points]::after {
+  content: " ▸";
+  font-size: 10px;
+}
+
+.track-info[data-has-points].expanded::after {
+  content: " ▾";
+}
+
+.point-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.point-list table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.point-list th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-panel);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.point-list td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.point-list tr:last-child td {
+  border-bottom: none;
+}
+
+.point-list tr:hover {
+  background: rgba(41,128,185,0.08);
+}
+
+/* --- Export --- */
+
+.export-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+/* --- Select --- */
+
+select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--bg-input);
+  color: var(--text);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+/* --- App title --- */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+
+.app-header h1 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.app-header .version {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* --- Leaflet tooltip override --- */
+
+.waypoint-label {
+  background: rgba(0,0,0,0.7) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 3px !important;
+  font-size: 11px !important;
+  padding: 2px 6px !important;
+  box-shadow: none !important;
+}
+
+.waypoint-label::before {
+  border-color: transparent;
+}
+.leaflet-tooltip-right.waypoint-label::before { border-right-color: rgba(0,0,0,0.7); }
+.leaflet-tooltip-left.waypoint-label::before { border-left-color: rgba(0,0,0,0.7); }
+.leaflet-tooltip-top.waypoint-label::before { border-top-color: rgba(0,0,0,0.7); }
+.leaflet-tooltip-bottom.waypoint-label::before { border-bottom-color: rgba(0,0,0,0.7); }
+
+.origin-marker { background: none; border: none; }
+.heading-arrow { background: none; border: none; }
+
+.axis-handle { cursor: grab; }
+.axis-handle:active { cursor: grabbing; }
+
+/* --- Mobile bottom sheet (< 768px) --- */
+
+.sheet-toggle {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 600;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  min-height: 44px;
+}
+
+.sheet-handle {
+  display: none;
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .map-wrap {
+    flex: 1;
+    order: 1;
+  }
+
+  .panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-width: 0;
+    max-height: 70vh;
+    max-height: 70dvh;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+    transform: translateY(calc(100% - 4px));
+    transition: transform 0.3s ease;
+    order: 2;
+    padding-top: 8px;
+  }
+
+  .panel.open {
+    transform: translateY(0);
+  }
+
+  .sheet-handle {
+    display: block;
+  }
+
+  .sheet-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel.open ~ .map-wrap .sheet-toggle {
+    display: none;
+  }
+}

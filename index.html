@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cartesian to GPS</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <div class="panel" id="panel">
+      <div class="sheet-handle" id="sheetHandle"></div>
+
+      <div class="app-header">
+        <h1>Cartesian to GPS</h1>
+        <span class="version">v3.0</span>
+      </div>
+
+      <!-- Origin & Heading -->
+      <div class="section">
+        <div class="section-title">Origin &amp; Heading</div>
+        <div class="field">
+          <label for="presetLocation">Preset Location</label>
+          <select id="presetLocation">
+            <option value="">-- Custom --</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="inputLat">Latitude</label>
+            <input type="number" id="inputLat" step="any" inputmode="decimal" placeholder="35.310833">
+          </div>
+          <div class="field">
+            <label for="inputLon">Longitude</label>
+            <input type="number" id="inputLon" step="any" inputmode="decimal" placeholder="-89.919361">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="inputHeading">Heading (Y Axis)</label>
+            <input type="number" id="inputHeading" step="any" inputmode="decimal" placeholder="110.40">
+          </div>
+          <div class="field" style="justify-content:flex-end">
+            <button class="btn btn-gps" id="btnGPS" title="Use My Location">&#9737; My Location</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Track Data -->
+      <div class="section">
+        <div class="section-title">Track Data</div>
+        <div class="field">
+          <label for="sampleSelect">Load Example Track</label>
+          <select id="sampleSelect">
+            <option value="">-- Select a track --</option>
+          </select>
+        </div>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="csvInput" accept=".csv,.txt,.kml,.gpx,.geojson">
+          <span>Tap to browse or drag &amp; drop a file<br><small>CSV, KML, GPX, or GeoJSON</small></span>
+        </div>
+        <div class="csv-help">
+          CSV format: <code>X, Y, Name</code> &mdash; one point per line.<br>
+          <a href="https://youtu.be/VPVfUfZq8-I" target="_blank" rel="noopener">Video tutorial</a>
+          &nbsp;&middot;&nbsp;
+          <a href="#" id="downloadSampleCSV">Download sample CSV</a>
+        </div>
+        <div class="track-info" id="trackInfo"></div>
+        <div class="field" id="trackNameField" hidden>
+          <label for="trackNameInput">Track Name</label>
+          <input type="text" id="trackNameInput" placeholder="Track name for export">
+        </div>
+        <div class="point-list" id="pointList" hidden></div>
+      </div>
+
+      <!-- Units & Axis Options -->
+      <div class="section">
+        <div class="section-title">Units</div>
+        <div class="segmented">
+          <label>
+            <input type="radio" name="unit" id="unitFeet" value="feet" checked>
+            <span>Feet</span>
+          </label>
+          <label>
+            <input type="radio" name="unit" id="unitMeters" value="meters">
+            <span>Meters</span>
+          </label>
+        </div>
+        <div class="section-title" style="margin-top:12px">Axis Options</div>
+        <div class="toggle-row">
+          <label class="toggle">
+            <span class="toggle-label">Mirror X</span>
+            <input type="checkbox" id="invertX">
+            <span class="toggle-track"></span>
+          </label>
+          <label class="toggle">
+            <span class="toggle-label">Mirror Y</span>
+            <input type="checkbox" id="invertY">
+            <span class="toggle-track"></span>
+          </label>
+          <label class="toggle">
+            <span class="toggle-label">Swap Axes</span>
+            <input type="checkbox" id="swapAxes">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Export -->
+      <div class="section">
+        <div class="section-title">Export</div>
+        <div class="export-hint">Choose a format — one file is all you need.</div>
+        <div class="field">
+          <select id="exportFormat">
+            <option value="kml">KML — Emlid Flow, Google Earth</option>
+            <option value="gpx">GPX — GPS devices</option>
+            <option value="geojson">GeoJSON — GIS tools</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" id="btnExport">Download</button>
+      </div>
+    </div>
+
+    <div class="map-wrap">
+      <div id="map"></div>
+      <button class="sheet-toggle" id="sheetToggle">&#9776; Controls</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="js/converter.js"></script>
+  <script src="js/csv.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
