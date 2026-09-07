@@ -112,25 +112,31 @@ var TrackMap = (function () {
   }
 
   function makeDraggableEnd(lat, lon, color, size, axisType) {
+    var touchSize = Math.max(size, 18);
     var handle = L.circleMarker([lat, lon], {
-      radius: size,
+      radius: touchSize,
       color: color,
       fillColor: color,
-      fillOpacity: 1,
+      fillOpacity: color === "transparent" ? 0 : 1,
       weight: 2,
-      className: "axis-handle"
+      className: "axis-handle",
+      bubblingMouseEvents: false
     });
 
-    handle.on("mousedown touchstart", function (e) {
-      L.DomEvent.stopPropagation(e);
+    function startDrag(e) {
+      if (e.originalEvent) {
+        e.originalEvent.preventDefault();
+        e.originalEvent.stopPropagation();
+      }
       mapInteracting = true;
       map.dragging.disable();
       map.scrollWheelZoom.disable();
       map.doubleClickZoom.disable();
-      map.touchZoom.disable();
+      if (map.touchZoom) map.touchZoom.disable();
 
       function onMove(ev) {
         ev.preventDefault();
+        ev.stopPropagation();
         var pt = ev.touches ? ev.touches[0] : ev;
         var rect = map.getContainer().getBoundingClientRect();
         var latlng = map.containerPointToLatLng(L.point(pt.clientX - rect.left, pt.clientY - rect.top));
@@ -143,22 +149,26 @@ var TrackMap = (function () {
         if (onHeadingDrag) onHeadingDrag(bearing);
       }
 
-      function onUp() {
+      function onUp(ev) {
+        ev.preventDefault();
         map.dragging.enable();
         map.scrollWheelZoom.enable();
         map.doubleClickZoom.enable();
-        map.touchZoom.enable();
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
-        document.removeEventListener("touchmove", onMove);
-        document.removeEventListener("touchend", onUp);
+        if (map.touchZoom) map.touchZoom.enable();
+        document.removeEventListener("mousemove", onMove, true);
+        document.removeEventListener("mouseup", onUp, true);
+        document.removeEventListener("touchmove", onMove, true);
+        document.removeEventListener("touchend", onUp, true);
       }
 
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
-      document.addEventListener("touchmove", onMove, { passive: false });
-      document.addEventListener("touchend", onUp);
-    });
+      document.addEventListener("mousemove", onMove, { capture: true });
+      document.addEventListener("mouseup", onUp, { capture: true });
+      document.addEventListener("touchmove", onMove, { capture: true, passive: false });
+      document.addEventListener("touchend", onUp, { capture: true });
+    }
+
+    handle.on("mousedown", startDrag);
+    handle.on("touchstart", startDrag);
 
     return handle;
   }
