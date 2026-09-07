@@ -27,7 +27,7 @@ See the [video tutorial](https://youtu.be/VPVfUfZq8-I) for instructions on creat
 
 ## Usage
 
-Visit the GitHub Pages site or open `index.html` locally. No build step, no dependencies to install — just static HTML, CSS, and JavaScript.
+**[Open the app](https://bseishen.github.io/Cartisian_to_GPS_Web/)** or run `index.html` locally. No build step, no dependencies to install — just static HTML, CSS, and JavaScript.
 
 1. Set your origin lat/lon and heading (or pick a preset)
 2. Load a CSV file or choose a sample track

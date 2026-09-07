@@ -279,6 +279,7 @@
         els.lon.value = pos.coords.longitude;
         els.btnGPS.innerHTML = "&#9737; My Location";
         els.btnGPS.disabled = false;
+        TrackMap.resetInteraction();
         update();
       },
       function () {
