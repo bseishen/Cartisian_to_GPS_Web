@@ -62,7 +62,7 @@
     if (!isNaN(lat) && !isNaN(lon)) {
       TrackMap.setOrigin(lat, lon);
     }
-    TrackMap.render(convertedPoints, lat, lon, heading);
+    TrackMap.render(convertedPoints, lat, lon, heading, els.unitFeet.checked);
 
     saveSettings();
   }
@@ -236,7 +236,7 @@
       if (!isNaN(parseFloat(els.lat.value)) && !isNaN(parseFloat(els.lon.value))) {
         TrackMap.setOrigin(parseFloat(els.lat.value), parseFloat(els.lon.value));
       }
-      TrackMap.render(convertedPoints, parseFloat(els.lat.value), parseFloat(els.lon.value), parseFloat(els.heading.value));
+      TrackMap.render(convertedPoints, parseFloat(els.lat.value), parseFloat(els.lon.value), parseFloat(els.heading.value), els.unitFeet.checked);
     }
   }
 

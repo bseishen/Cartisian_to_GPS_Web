@@ -478,6 +478,10 @@ select {
 
 .axis-handle { cursor: grab; }
 .axis-handle:active { cursor: grabbing; }
+.drag-handle { background: none; border: none; }
+.drag-handle div { cursor: grab; }
+.drag-handle div:active { cursor: grabbing; }
+.dim-label { background: none; border: none; }
 
 /* --- Mobile bottom sheet (< 768px) --- */
 

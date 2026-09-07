@@ -112,63 +112,70 @@ var TrackMap = (function () {
   }
 
   function makeDraggableEnd(lat, lon, color, size, axisType) {
-    var touchSize = Math.max(size, 18);
-    var handle = L.circleMarker([lat, lon], {
-      radius: touchSize,
-      color: color,
-      fillColor: color,
-      fillOpacity: 0.4,
-      weight: 2,
-      className: "axis-handle",
-      bubblingMouseEvents: false
+    var px = Math.max(size, 36);
+    var icon = L.divIcon({
+      className: "drag-handle",
+      html: '<div style="width:' + px + 'px;height:' + px + 'px;border-radius:50%;'
+        + 'background:' + color + ';opacity:0.45;border:2px solid ' + color + ';cursor:grab"></div>',
+      iconSize: [px, px],
+      iconAnchor: [px / 2, px / 2]
+    });
+    var handle = L.marker([lat, lon], {
+      icon: icon,
+      interactive: true,
+      draggable: false,
+      zIndexOffset: 900
     });
 
-    function startDrag(e) {
-      if (e.originalEvent) {
-        e.originalEvent.preventDefault();
-        e.originalEvent.stopPropagation();
-      }
-      mapInteracting = true;
-      map.dragging.disable();
-      map.scrollWheelZoom.disable();
-      map.doubleClickZoom.disable();
-      if (map.touchZoom) map.touchZoom.disable();
+    handle.on("add", function () {
+      var el = handle.getElement();
+      if (!el) return;
 
-      function onMove(ev) {
+      function onStart(ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        var pt = ev.touches ? ev.touches[0] : ev;
-        var rect = map.getContainer().getBoundingClientRect();
-        var latlng = map.containerPointToLatLng(L.point(pt.clientX - rect.left, pt.clientY - rect.top));
-        handle.setLatLng(latlng);
+        mapInteracting = true;
+        map.dragging.disable();
+        map.scrollWheelZoom.disable();
+        map.doubleClickZoom.disable();
+        if (map.touchZoom) map.touchZoom.disable();
 
-        var bearing = bearingFromOrigin(latlng.lat, latlng.lng);
-        if (axisType === "x") {
-          bearing = (bearing - 90 + 360) % 360;
+        function onMove(mv) {
+          mv.preventDefault();
+          mv.stopPropagation();
+          var pt = mv.touches ? mv.touches[0] : mv;
+          var rect = map.getContainer().getBoundingClientRect();
+          var latlng = map.containerPointToLatLng(L.point(pt.clientX - rect.left, pt.clientY - rect.top));
+          handle.setLatLng(latlng);
+
+          var bearing = bearingFromOrigin(latlng.lat, latlng.lng);
+          if (axisType === "x") {
+            bearing = (bearing - 90 + 360) % 360;
+          }
+          if (onHeadingDrag) onHeadingDrag(bearing);
         }
-        if (onHeadingDrag) onHeadingDrag(bearing);
+
+        function onEnd(ev2) {
+          ev2.preventDefault();
+          map.dragging.enable();
+          map.scrollWheelZoom.enable();
+          map.doubleClickZoom.enable();
+          if (map.touchZoom) map.touchZoom.enable();
+          document.removeEventListener("mousemove", onMove, true);
+          document.removeEventListener("mouseup", onEnd, true);
+          document.removeEventListener("touchmove", onMove, true);
+          document.removeEventListener("touchend", onEnd, true);
+        }
+
+        document.addEventListener("mousemove", onMove, { capture: true });
+        document.addEventListener("mouseup", onEnd, { capture: true });
+        document.addEventListener("touchmove", onMove, { capture: true, passive: false });
+        document.addEventListener("touchend", onEnd, { capture: true });
       }
 
-      function onUp(ev) {
-        ev.preventDefault();
-        map.dragging.enable();
-        map.scrollWheelZoom.enable();
-        map.doubleClickZoom.enable();
-        if (map.touchZoom) map.touchZoom.enable();
-        document.removeEventListener("mousemove", onMove, true);
-        document.removeEventListener("mouseup", onUp, true);
-        document.removeEventListener("touchmove", onMove, true);
-        document.removeEventListener("touchend", onUp, true);
-      }
-
-      document.addEventListener("mousemove", onMove, { capture: true });
-      document.addEventListener("mouseup", onUp, { capture: true });
-      document.addEventListener("touchmove", onMove, { capture: true, passive: false });
-      document.addEventListener("touchend", onUp, { capture: true });
-    }
-
-    handle.on("mousedown", startDrag);
-    handle.on("touchstart", startDrag);
+      el.addEventListener("mousedown", onStart);
+      el.addEventListener("touchstart", onStart, { passive: false });
+    });
 
     return handle;
   }
@@ -189,7 +196,7 @@ var TrackMap = (function () {
     }
   }
 
-  function render(points, originLat, originLon, headingDeg) {
+  function render(points, originLat, originLon, headingDeg, useFeet) {
     if (!map) return;
     overlayGroup.clearLayers();
 
@@ -220,17 +227,32 @@ var TrackMap = (function () {
         ];
       }
 
-      function grayLine(dist, angleRad, skipDot) {
+      function formatDim(meters) {
+        var val = Math.abs(meters);
+        if (useFeet) val = val / 0.3048;
+        var unit = useFeet ? "ft" : "m";
+        return Math.round(val * 10) / 10 + " " + unit;
+      }
+
+      function dimLabel(start, end, text, color) {
+        var midLat = (start[0] + end[0]) / 2;
+        var midLon = (start[1] + end[1]) / 2;
+        var icon = L.divIcon({
+          className: "dim-label",
+          html: '<span style="background:rgba(0,0,0,0.6);color:#fff;padding:1px 5px;border-radius:3px;font-size:11px;white-space:nowrap">' + text + '</span>',
+          iconSize: [0, 0],
+          iconAnchor: [0, 12]
+        });
+        L.marker([midLat, midLon], { icon: icon, interactive: false }).addTo(overlayGroup);
+      }
+
+      function grayLine(dist, angleRad) {
         var end = axisEnd(dist, angleRad);
         L.polyline(
           [[originLat, originLon], end],
           { color: "#cccccc", weight: 2, dashArray: "6,4", opacity: 0.8 }
         ).addTo(overlayGroup);
-        if (!skipDot) {
-          L.circleMarker(end, {
-            radius: 5, color: "#cccccc", fillColor: "#cccccc", fillOpacity: 1, weight: 1
-          }).addTo(overlayGroup);
-        }
+        dimLabel([originLat, originLon], end, formatDim(dist), "#cccccc");
         return end;
       }
 
@@ -243,18 +265,14 @@ var TrackMap = (function () {
         { color: "#f1c40f", weight: 3, dashArray: "8,6", opacity: 0.9 }
       ).addTo(overlayGroup);
       drawArrow(yEnd, yRad, "#f1c40f");
+      dimLabel([originLat, originLon], yEnd, formatDim(headingLen), "#f1c40f");
       var yHandle = makeDraggableEnd(yEnd[0], yEnd[1], "#f1c40f", 12, "y");
       yHandle.bindTooltip("Heading — drag to rotate", { direction: "right", offset: [10, 0], className: "waypoint-label" });
       overlayGroup.addLayer(yHandle);
 
       // Gray axis lines — only appear if points exist in that quadrant
       if (minY < 0) grayLine(minY, yRad);
-      if (maxX > 0) {
-        var xPosEnd = grayLine(maxX, xRad, true);
-        var xHandle = makeDraggableEnd(xPosEnd[0], xPosEnd[1], "#cccccc", 12, "x");
-        xHandle.bindTooltip("X+ axis — drag to rotate", { direction: "right", offset: [10, 0], className: "waypoint-label" });
-        overlayGroup.addLayer(xHandle);
-      }
+      if (maxX > 0) grayLine(maxX, xRad);
       if (minX < 0) grayLine(minX, xRad);
     }
 
