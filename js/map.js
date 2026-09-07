@@ -117,7 +117,7 @@ var TrackMap = (function () {
       radius: touchSize,
       color: color,
       fillColor: color,
-      fillOpacity: color === "transparent" ? 0 : 1,
+      fillOpacity: 0.4,
       weight: 2,
       className: "axis-handle",
       bubblingMouseEvents: false
@@ -220,15 +220,17 @@ var TrackMap = (function () {
         ];
       }
 
-      function grayLine(dist, angleRad) {
+      function grayLine(dist, angleRad, skipDot) {
         var end = axisEnd(dist, angleRad);
         L.polyline(
           [[originLat, originLon], end],
           { color: "#cccccc", weight: 2, dashArray: "6,4", opacity: 0.8 }
         ).addTo(overlayGroup);
-        L.circleMarker(end, {
-          radius: 5, color: "#cccccc", fillColor: "#cccccc", fillOpacity: 1, weight: 1
-        }).addTo(overlayGroup);
+        if (!skipDot) {
+          L.circleMarker(end, {
+            radius: 5, color: "#cccccc", fillColor: "#cccccc", fillOpacity: 1, weight: 1
+          }).addTo(overlayGroup);
+        }
         return end;
       }
 
@@ -241,15 +243,15 @@ var TrackMap = (function () {
         { color: "#f1c40f", weight: 3, dashArray: "8,6", opacity: 0.9 }
       ).addTo(overlayGroup);
       drawArrow(yEnd, yRad, "#f1c40f");
-      var yHandle = makeDraggableEnd(yEnd[0], yEnd[1], "transparent", 10, "y");
+      var yHandle = makeDraggableEnd(yEnd[0], yEnd[1], "#f1c40f", 12, "y");
       yHandle.bindTooltip("Heading — drag to rotate", { direction: "right", offset: [10, 0], className: "waypoint-label" });
       overlayGroup.addLayer(yHandle);
 
       // Gray axis lines — only appear if points exist in that quadrant
       if (minY < 0) grayLine(minY, yRad);
       if (maxX > 0) {
-        var xPosEnd = grayLine(maxX, xRad);
-        var xHandle = makeDraggableEnd(xPosEnd[0], xPosEnd[1], "transparent", 8, "x");
+        var xPosEnd = grayLine(maxX, xRad, true);
+        var xHandle = makeDraggableEnd(xPosEnd[0], xPosEnd[1], "#cccccc", 12, "x");
         xHandle.bindTooltip("X+ axis — drag to rotate", { direction: "right", offset: [10, 0], className: "waypoint-label" });
         overlayGroup.addLayer(xHandle);
       }
