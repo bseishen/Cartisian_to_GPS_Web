@@ -122,59 +122,18 @@ var TrackMap = (function () {
     });
     var handle = L.marker([lat, lon], {
       icon: icon,
-      interactive: true,
-      draggable: false,
+      draggable: true,
       zIndexOffset: 900
     });
 
-    handle.on("add", function () {
-      var el = handle.getElement();
-      if (!el) return;
-
-      function onStart(ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        mapInteracting = true;
-        map.dragging.disable();
-        map.scrollWheelZoom.disable();
-        map.doubleClickZoom.disable();
-        if (map.touchZoom) map.touchZoom.disable();
-
-        function onMove(mv) {
-          mv.preventDefault();
-          mv.stopPropagation();
-          var pt = mv.touches ? mv.touches[0] : mv;
-          var rect = map.getContainer().getBoundingClientRect();
-          var latlng = map.containerPointToLatLng(L.point(pt.clientX - rect.left, pt.clientY - rect.top));
-          handle.setLatLng(latlng);
-
-          var bearing = bearingFromOrigin(latlng.lat, latlng.lng);
-          if (axisType === "x") {
-            bearing = (bearing - 90 + 360) % 360;
-          }
-          if (onHeadingDrag) onHeadingDrag(bearing);
-        }
-
-        function onEnd(ev2) {
-          ev2.preventDefault();
-          map.dragging.enable();
-          map.scrollWheelZoom.enable();
-          map.doubleClickZoom.enable();
-          if (map.touchZoom) map.touchZoom.enable();
-          document.removeEventListener("mousemove", onMove, true);
-          document.removeEventListener("mouseup", onEnd, true);
-          document.removeEventListener("touchmove", onMove, true);
-          document.removeEventListener("touchend", onEnd, true);
-        }
-
-        document.addEventListener("mousemove", onMove, { capture: true });
-        document.addEventListener("mouseup", onEnd, { capture: true });
-        document.addEventListener("touchmove", onMove, { capture: true, passive: false });
-        document.addEventListener("touchend", onEnd, { capture: true });
+    handle.on("dragstart", function () { mapInteracting = true; });
+    handle.on("drag", function () {
+      var pos = handle.getLatLng();
+      var bearing = bearingFromOrigin(pos.lat, pos.lng);
+      if (axisType === "x") {
+        bearing = (bearing - 90 + 360) % 360;
       }
-
-      el.addEventListener("mousedown", onStart);
-      el.addEventListener("touchstart", onStart, { passive: false });
+      if (onHeadingDrag) onHeadingDrag(bearing);
     });
 
     return handle;
