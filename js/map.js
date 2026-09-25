@@ -243,7 +243,14 @@ var TrackMap = (function () {
       if (minX < 0) grayLine(minX, xRad);
     }
 
-    if (!points || points.length === 0) return;
+    if (!points || points.length === 0) {
+      if (hasOrigin && !mapInteracting) {
+        programmaticMove = true;
+        map.panTo([originLat, originLon]);
+        programmaticMove = false;
+      }
+      return;
+    }
 
     // Auto-fit only when user is not interacting with the map
     if (!mapInteracting) {

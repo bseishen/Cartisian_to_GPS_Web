@@ -337,6 +337,13 @@
     inputs[i].addEventListener("input", debouncedUpdate);
   }
 
+  // Re-fit the map when the origin is edited manually
+  function onOriginInput() {
+    TrackMap.resetInteraction();
+  }
+  els.lat.addEventListener("input", onOriginInput);
+  els.lon.addEventListener("input", onOriginInput);
+
   var checks = [els.invertX, els.invertY, els.swapAxes, els.unitMeters, els.unitFeet];
   for (var j = 0; j < checks.length; j++) {
     checks[j].addEventListener("change", update);
