@@ -483,6 +483,34 @@ select {
 .drag-handle div:active { cursor: grabbing; }
 .dim-label { background: none; border: none; }
 
+/* --- Measure tool --- */
+.measure-control a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+}
+.measure-control a.active {
+  background: #e67e22;
+  color: #fff;
+}
+.measuring.leaflet-container,
+.measuring .leaflet-interactive { cursor: crosshair !important; }
+.measuring .leaflet-marker-icon { pointer-events: none; }
+.measure-label { background: none; border: none; }
+.measure-label span {
+  display: inline-block;
+  transform: translateX(-50%);
+  background: #e67e22;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
 /* --- Mobile bottom sheet (< 768px) --- */
 
 .sheet-toggle {

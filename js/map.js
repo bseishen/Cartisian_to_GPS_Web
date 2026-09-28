@@ -9,6 +9,12 @@ var TrackMap = (function () {
   var lastOriginLat, lastOriginLon;
   var mapInteracting = false;
   var programmaticMove = false;
+  var lastPoints = [];
+  var measureGroup;
+  var measureActive = false;
+  var measurePts = [];
+  var measureUseFeet = true;
+  var measureBtn;
 
   var ESRI_SATELLITE = L.tileLayer(
     "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -63,6 +69,8 @@ var TrackMap = (function () {
     ).addTo(map);
 
     overlayGroup = L.layerGroup().addTo(map);
+    measureGroup = L.layerGroup().addTo(map);
+    initMeasure();
 
     map.on("dragstart zoomstart", function () {
       if (!programmaticMove) mapInteracting = true;
@@ -147,6 +155,115 @@ var TrackMap = (function () {
     return handle;
   }
 
+  // --- Measure tool ---
+  var SNAP_PX = 14;
+
+  function initMeasure() {
+    var MeasureControl = L.Control.extend({
+      options: { position: "topright" },
+      onAdd: function () {
+        var bar = L.DomUtil.create("div", "leaflet-bar measure-control");
+        measureBtn = L.DomUtil.create("a", "", bar);
+        measureBtn.href = "#";
+        measureBtn.title = "Measure distance";
+        measureBtn.setAttribute("role", "button");
+        measureBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
+          + '<rect x="1" y="8" width="22" height="8" rx="1" transform="rotate(-45 12 12)"/>'
+          + '<path d="M9.5 9.5l1.5 1.5M12 7l2 2M14.5 4.5l1.5 1.5M7 12l2 2M4.5 14.5l1.5 1.5"/>'
+          + '</svg>';
+        L.DomEvent.disableClickPropagation(bar);
+        L.DomEvent.on(measureBtn, "click", function (e) {
+          L.DomEvent.preventDefault(e);
+          setMeasureActive(!measureActive);
+        });
+        return bar;
+      }
+    });
+    new MeasureControl().addTo(map);
+
+    map.on("click", function (e) {
+      if (!measureActive) return;
+      if (measurePts.length >= 2) measurePts = [];
+      measurePts.push(snapLatLng(e.latlng));
+      drawMeasure(null);
+    });
+
+    map.on("mousemove", function (e) {
+      if (!measureActive || measurePts.length !== 1) return;
+      drawMeasure(snapLatLng(e.latlng));
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && measureActive) setMeasureActive(false);
+    });
+  }
+
+  function setMeasureActive(active) {
+    measureActive = active;
+    measurePts = [];
+    measureGroup.clearLayers();
+    L.DomUtil[active ? "addClass" : "removeClass"](map.getContainer(), "measuring");
+    L.DomUtil[active ? "addClass" : "removeClass"](measureBtn, "active");
+    if (active) map.doubleClickZoom.disable();
+    else map.doubleClickZoom.enable();
+  }
+
+  // Snap to the origin or a waypoint when the click lands close to one
+  function snapLatLng(latlng) {
+    var candidates = [];
+    if (originMarker) candidates.push(originMarker.getLatLng());
+    for (var i = 0; i < lastPoints.length; i++) {
+      candidates.push(L.latLng(lastPoints[i].lat, lastPoints[i].lon));
+    }
+    var clickPx = map.latLngToContainerPoint(latlng);
+    var best = latlng, bestDist = SNAP_PX;
+    for (var j = 0; j < candidates.length; j++) {
+      var d = clickPx.distanceTo(map.latLngToContainerPoint(candidates[j]));
+      if (d < bestDist) {
+        bestDist = d;
+        best = candidates[j];
+      }
+    }
+    return best;
+  }
+
+  function formatMeasure(meters) {
+    var val = measureUseFeet ? meters / 0.3048 : meters;
+    var unit = measureUseFeet ? "ft" : "m";
+    return val.toFixed(val < 100 ? 2 : 1) + " " + unit;
+  }
+
+  function drawMeasure(cursorLatLng) {
+    measureGroup.clearLayers();
+    if (measurePts.length === 0) return;
+    var a = measurePts[0];
+    var b = measurePts.length > 1 ? measurePts[1] : cursorLatLng;
+
+    var dot = { radius: 5, color: "#fff", weight: 2, fillColor: "#e67e22", fillOpacity: 1, interactive: false };
+    L.circleMarker(a, dot).addTo(measureGroup);
+    if (!b) return;
+    if (measurePts.length > 1) L.circleMarker(b, dot).addTo(measureGroup);
+
+    L.polyline([a, b], {
+      color: "#e67e22",
+      weight: 3,
+      dashArray: measurePts.length > 1 ? null : "6,6",
+      interactive: false
+    }).addTo(measureGroup);
+
+    var mid = L.latLng((a.lat + b.lat) / 2, (a.lng + b.lng) / 2);
+    L.marker(mid, {
+      icon: L.divIcon({
+        className: "measure-label",
+        html: "<span>" + formatMeasure(map.distance(a, b)) + "</span>",
+        iconSize: [0, 0],
+        iconAnchor: [0, 14]
+      }),
+      interactive: false,
+      zIndexOffset: 2000
+    }).addTo(measureGroup);
+  }
+
   function fitAll(points, originLat, originLon) {
     if (!map) return;
     var bounds = L.latLngBounds();
@@ -163,13 +280,20 @@ var TrackMap = (function () {
     }
   }
 
-  function render(points, originLat, originLon, headingDeg, useFeet) {
+  function render(points, originLat, originLon, headingDeg, useFeet, showLabels, showAxes) {
     if (!map) return;
     overlayGroup.clearLayers();
+    lastPoints = points || [];
+    if (showLabels === undefined) showLabels = true;
+    if (showAxes === undefined) showAxes = true;
+    if (measureUseFeet !== useFeet) {
+      measureUseFeet = useFeet;
+      if (measurePts.length === 2) drawMeasure(null);
+    }
 
     var hasOrigin = !isNaN(originLat) && !isNaN(originLon);
 
-    if (hasOrigin && !isNaN(headingDeg) && points && points.length > 0) {
+    if (showAxes && hasOrigin && !isNaN(headingDeg) && points && points.length > 0) {
       var rLat = (Math.PI / 180) * originLat;
       var latMpd = 111132.954 - 559.822 * Math.cos(2 * rLat) + 1.175 * Math.cos(4 * rLat);
       var lonMpd = 111412.84 * Math.cos(rLat) - 93.5 * Math.cos(3 * rLat);
@@ -202,6 +326,7 @@ var TrackMap = (function () {
       }
 
       function dimLabel(start, end, text, color) {
+        if (!showLabels) return;
         var midLat = (start[0] + end[0]) / 2;
         var midLon = (start[1] + end[1]) / 2;
         var icon = L.divIcon({
@@ -347,6 +472,13 @@ var TrackMap = (function () {
         bestDir = "right";
         bestOffset = [BASE_GAP, 0];
         placedRects.push(labelRect(px, bestDir, bestOffset, nameLen));
+      }
+
+      if (!showLabels) {
+        // Labels hidden: show the name on hover only
+        marker.bindTooltip(p.name, { direction: "right", offset: [BASE_GAP, 0], className: "waypoint-label" });
+        overlayGroup.addLayer(marker);
+        continue;
       }
 
       marker.bindTooltip(p.name, {

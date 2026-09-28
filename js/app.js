@@ -8,6 +8,8 @@
     invertX: document.getElementById("invertX"),
     invertY: document.getElementById("invertY"),
     swapAxes: document.getElementById("swapAxes"),
+    showLabels: document.getElementById("showLabels"),
+    showAxes: document.getElementById("showAxes"),
     unitMeters: document.getElementById("unitMeters"),
     unitFeet: document.getElementById("unitFeet"),
     sampleSelect: document.getElementById("sampleSelect"),
@@ -62,7 +64,7 @@
     if (!isNaN(lat) && !isNaN(lon)) {
       TrackMap.setOrigin(lat, lon);
     }
-    TrackMap.render(convertedPoints, lat, lon, heading, els.unitFeet.checked);
+    TrackMap.render(convertedPoints, lat, lon, heading, els.unitFeet.checked, els.showLabels.checked, els.showAxes.checked);
 
     saveSettings();
   }
@@ -236,7 +238,7 @@
       if (!isNaN(parseFloat(els.lat.value)) && !isNaN(parseFloat(els.lon.value))) {
         TrackMap.setOrigin(parseFloat(els.lat.value), parseFloat(els.lon.value));
       }
-      TrackMap.render(convertedPoints, parseFloat(els.lat.value), parseFloat(els.lon.value), parseFloat(els.heading.value), els.unitFeet.checked);
+      TrackMap.render(convertedPoints, parseFloat(els.lat.value), parseFloat(els.lon.value), parseFloat(els.heading.value), els.unitFeet.checked, els.showLabels.checked, els.showAxes.checked);
     }
   }
 
@@ -344,7 +346,7 @@
   els.lat.addEventListener("input", onOriginInput);
   els.lon.addEventListener("input", onOriginInput);
 
-  var checks = [els.invertX, els.invertY, els.swapAxes, els.unitMeters, els.unitFeet];
+  var checks = [els.invertX, els.invertY, els.swapAxes, els.unitMeters, els.unitFeet, els.showLabels, els.showAxes];
   for (var j = 0; j < checks.length; j++) {
     checks[j].addEventListener("change", update);
   }
@@ -362,6 +364,8 @@
         invertY: els.invertY.checked,
         swapAxes: els.swapAxes.checked,
         feet: els.unitFeet.checked,
+        showLabels: els.showLabels.checked,
+        showAxes: els.showAxes.checked,
         sampleTrack: els.sampleSelect.value,
         trackName: currentTrackName
       };
@@ -380,6 +384,8 @@
       els.invertX.checked = !!data.invertX;
       els.invertY.checked = !!data.invertY;
       els.swapAxes.checked = !!data.swapAxes;
+      els.showLabels.checked = data.showLabels !== false;
+      els.showAxes.checked = data.showAxes !== false;
       if (data.feet) {
         els.unitFeet.checked = true;
       } else {
